@@ -3,6 +3,8 @@ SUBSYSTEM_DEF(necromorph)
 	init_order = SS_INIT_NECROMORPH	//Initializes before atoms
 	flags = SS_NO_FIRE
 
+	var/list/datum/marker_upgrade/marker_upgrades = list()
+
 	//Player Controlled - Corruption Growth Tracking
 	var/list/corruption_growth = list()
 	var/list/corruption_structures = list()
@@ -20,7 +22,7 @@ SUBSYSTEM_DEF(necromorph)
 	var/list/necroqueue = list()	//This is a list of signal players who are waiting to be put into the first available major vessel
 
 	//Marker
-	var/obj/machinery/marker/marker
+	var/list/obj/machinery/marker/markers = list()
 
 	var/list/marker_spawns_ishimura = list()	//Possible spawn locations aboard ishimura
 	var/list/marker_spawns_aegis = list()	//Possible spawn locations on Aegis VII
@@ -41,6 +43,19 @@ SUBSYSTEM_DEF(necromorph)
 
 /datum/controller/subsystem/necromorph/stat_entry(msg)
 	return ("Click to debug!")
+
+/datum/controller/subsystem/necromorph/Initialize(start_timeofday)
+	for(var/type in subtypesof(/datum/marker_upgrade))
+		var/datum/marker_upgrade/upgrade = new type()
+		marker_upgrades[upgrade.id] = new type()
+	.=..()
+
+/datum/controller/subsystem/necromorph/proc/get_random_upgrades()
+	.=list()
+	var/list/upgrades = marker_upgrades.Copy()
+	for(var/i = 1 to round(upgrades.len * 0.25))
+		. += upgrades[i]
+		upgrades -= upgrades[i]
 
 /*
 /datum/controller/subsystem/necromorph/proc/join_necroqueue(mob/dead/observer/eye/signal/M)
@@ -117,38 +132,6 @@ SUBSYSTEM_DEF(necromorph)
 	//We will return the difference between last and current time. Eyes may do something with this
 	return (difference)
 
-*/
-
-
-/proc/add_massive_atom(var/atom/A)
-	if ((A in SSnecromorph.massive_necroatoms))
-		return
-
-	SSnecromorph.massive_necroatoms += A
-	var/obj/machinery/marker/M = get_marker()
-	if (M)
-		M.invested_biomass = NONSENSICAL_VALUE
-		M.unavailable_biomass = NONSENSICAL_VALUE
-
-
-/proc/remove_massive_atom(var/atom/A)
-	if (!(A in SSnecromorph.massive_necroatoms))
-		return
-
-	SSnecromorph.massive_necroatoms -= A
-	var/obj/machinery/marker/M = get_marker()
-	if (M)
-		M.invested_biomass = NONSENSICAL_VALUE
-		M.unavailable_biomass = NONSENSICAL_VALUE
-
-
-//Possible future todo: Allow this to take some kind of faction id in order to allow a necros vs necros gamemode
-/proc/get_marker()
-	if (SSnecromorph)
-		return SSnecromorph.marker
-
-
-/*
 //Updates the energy holders of all necromorph players, refreshing their spell list
 /datum/controller/subsystem/necromorph/proc/update_all_ability_lists(var/clear = FALSE)
 	for (var/key in GLOB.players)
@@ -165,21 +148,3 @@ SUBSYSTEM_DEF(necromorph)
 			S.update_verbs()
 
 */
-
-
-//Shard handling
-/datum/controller/subsystem/necromorph/proc/register_shard(var/obj/item/marker_shard/MS)
-	//var/shardsbefore = shards.len
-	shards |= MS
-
-	//When the number of shards in the world switches between zero and nonzero, we update ability lists
-	//if(shardsbefore == 0)
-		//update_all_ability_lists()
-
-/datum/controller/subsystem/necromorph/proc/unregister_shard(var/obj/item/marker_shard/MS)
-	//var/shardsbefore = shards.len
-	shards -= MS
-	//When the number of shards in the world switches between zero and nonzero, we update ability lists
-	//if((shardsbefore > 0) && (shards.len <= 0))
-		//update_all_ability_lists()
-
