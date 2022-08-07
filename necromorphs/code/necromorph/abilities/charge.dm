@@ -144,10 +144,9 @@
 
 /datum/action/cooldown/necro/charge/slasher/do_charge_indicator(atom/charge_target)
 	var/mob/living/carbon/necromorph/source = owner
-	var/matrix/new_matrix = matrix(source.transform)
 	var/shake_dir = pick(-1, 1)
-	new_matrix.Turn(16*shake_dir)
+	var/matrix/new_matrix = matrix(source.transform, 16*shake_dir, MATRIX_ROTATE)
+	var/matrix/old_matrix = matrix(source.transform)
 	animate(source, transform = new_matrix, pixel_x = source.pixel_x + 5*shake_dir, time = 1)
-	spawn(1)
-		animate(source, transform = matrix(), pixel_x = source.pixel_x-5*shake_dir, time = 9, easing = ELASTIC_EASING)
+	animate(transform = old_matrix, pixel_x = source.pixel_x-5*shake_dir, time = 9, easing = ELASTIC_EASING)
 	source.play_necro_sound(SOUND_SHOUT_LONG, VOLUME_HIGH, TRUE, 3)
