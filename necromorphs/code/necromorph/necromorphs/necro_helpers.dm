@@ -16,25 +16,11 @@
 /mob/living/carbon/necromorph/proc/generate_name()
 	//We don't have a nicknumber yet, assign one to stick with us
 	if(!nicknumber)
-		var/tempnumber = rand(1, 999)
-		var/list/numberlist = list()
-		for(var/mob/living/carbon/necromorph/N in GLOB.necro_mob_list)
-			numberlist += N.nicknumber
-
-		while(tempnumber in numberlist)
-			tempnumber = rand(1, 999)
-
-		nicknumber = tempnumber
+		nicknumber = rand(1, 999)
 
 	name = "[initial(class.display_name)] ([nicknumber])"
 	real_name = name
 	update_name()
-
-	marker?.marker_status_ui.update_necro_info()
-
-/mob/living/carbon/necromorph/proc/update_visibility()
-	SIGNAL_HANDLER
-	GLOB.markernet.updateVisibility(src, 0)
 
 /mob/living/carbon/necromorph/proc/play_necro_sound(audio_type, volume, extra_range)
 	CRASH("play_necro_sound() wasn't overriden | Name: [name] | Type: [type]")

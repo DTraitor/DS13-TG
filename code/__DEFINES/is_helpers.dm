@@ -112,7 +112,7 @@ GLOBAL_LIST_INIT(turfs_openspace, typecacheof(list(
 
 #define iscyborg(A) (istype(A, /mob/living/silicon/robot))
 
-#define isMarker(A) (istype(A, /mob/living/silicon/marker))
+#define isMarkerCamera(A) (istype(A, /mob/camera/marker_signal))
 
 #define isAI(A) (istype(A, /mob/living/silicon/ai))
 

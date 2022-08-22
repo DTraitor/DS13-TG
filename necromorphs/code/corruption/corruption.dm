@@ -48,7 +48,6 @@
 		var/turf/T = get_step(src, direction)
 		//In case we are in null space/near the map border
 		if(T)
-			RegisterSignal(T, COMSIG_TURF_CHANGE, .proc/on_turf_change)
 			RegisterSignal(T, COMSIG_TURF_CHANGED, .proc/on_turf_changed)
 			if(isspaceturf(T) || istype(T, /turf/open/openspace))
 				continue
@@ -104,19 +103,16 @@
 				SScorruption.spreading |= src
 	alpha = clamp(255*new_integrity/max_integrity, 20, 215)
 
-//Turf below us is about to change - remove from the list in case it's there
-/obj/structure/corruption/proc/on_turf_change(turf/source)
-	SIGNAL_HANDLER
-	turfs_to_spread -= source
-
 //Turf below us was replaced, check if we can spread
 /obj/structure/corruption/proc/on_turf_changed(turf/source, flags)
 	SIGNAL_HANDLER
 	if(isspaceturf(source) || !istype(source, /turf/open/openspace))
+		turfs_to_spread -= source
 		return
 	if(source.density || (locate(/obj/structure/corruption) in source))
+		turfs_to_spread -= source
 		return
-	turfs_to_spread += source
+	turfs_to_spread |= source
 	if(atom_integrity >= max_integrity)
 		SScorruption.spreading |= src
 

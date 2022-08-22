@@ -44,7 +44,7 @@
 	//Use initial(class.X) or marker.necro_classes[class].X
 	var/datum/necro_class/class = /datum/necro_class
 
-	var/mob/living/silicon/marker/marker
+	var/obj/structure/marker/marker
 
 	var/necro_mobhud = FALSE //whether the necromorph mobhud is activated or not.
 

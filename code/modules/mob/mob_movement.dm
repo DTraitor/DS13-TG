@@ -94,9 +94,6 @@
 	if(mob.remote_control) //we're controlling something, our movement is relayed to it
 		return mob.remote_control.relaymove(mob, direct)
 
-	if(isMarker(mob))
-		return MarkerMove(new_loc,direct,mob)
-
 	if(isAI(mob))
 		return AIMove(new_loc,direct,mob)
 

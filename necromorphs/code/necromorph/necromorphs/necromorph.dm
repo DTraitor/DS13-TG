@@ -1,27 +1,19 @@
-/mob/living/carbon/necromorph/Initialize(mapload, atom/loc, mob/living/silicon/marker/marker_master)
+/mob/living/carbon/necromorph/Initialize(mapload, atom/loc, obj/structure/marker/marker_master)
 	create_bodyparts()
 	prepare_huds() //Prevents a nasty runtime on necro init
 	create_internal_organs()
 	ADD_TRAIT(src, TRAIT_IS_NECROMORPH, NECROMORPH_TRAIT)
 	.=..()
-	GLOB.markernet.cameras += src
-	GLOB.markernet.addCamera(src)
-	GLOB.living_necro_list += src
-	GLOB.necro_mob_list += src
 
 	if(marker_master)
 		marker = marker_master
-	else
-		marker = SSnecromorph.marker
+
+	marker?.markernet.addVisionSource(src)
 
 	generate_name()
 
 	if(marker)
 		marker.add_necro(src)
-
-		if(marker.marker_status_ui)
-			marker.marker_status_ui.update_all_necro_data()
-
 		var/datum/necro_class/temp = marker.necro_classes[class].traits
 		temp.load_data(src)
 		set_health(temp.max_health)
@@ -34,7 +26,6 @@
 	create_dna()
 
 	AddComponent(/datum/component/health_meter)
-	RegisterSignal(src, COMSIG_MOVABLE_MOVED, .proc/update_visibility)
 	RegisterSignal(src, COMSIG_STARTED_CHARGE, .proc/start_charge)
 	RegisterSignal(src, COMSIG_FINISHED_CHARGE, .proc/end_charge)
 
@@ -45,8 +36,8 @@
 	.=..()
 
 /mob/living/carbon/necromorph/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0)
-	.=..(full_heal, admin_revive, excess_healing)
-	marker.add_necro(src)
+	.=..()
+	marker?.add_necro(src)
 
 /mob/living/carbon/necromorph/update_stat()
 	. = ..()
@@ -83,28 +74,14 @@
 
 	.=..()
 
-	GLOB.living_necro_list -= src
 	marker?.remove_necro(src)
 
 /mob/living/carbon/necromorph/Destroy()
 	.=..()
-	GLOB.markernet.cameras -= src
-	GLOB.markernet.removeCamera(src)
-	GLOB.living_necro_list -= src
-	GLOB.necro_mob_list -= src
-
-	if(marker)
-		marker.remove_necro(src)
+	marker.markernet.removeVisionSource(src)
+	marker?.remove_necro(src)
 
 	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
-
-/mob/living/carbon/necromorph/can_use_marker()
-	if(stat & DEAD)
-		return FALSE
-	return TRUE
-
-/atom/proc/can_use_marker()
-	return FALSE
 
 /atom/proc/can_see_marker()
 	var/list/see = null
