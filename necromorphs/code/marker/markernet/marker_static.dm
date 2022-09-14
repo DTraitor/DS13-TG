@@ -1,4 +1,6 @@
-// We need parallax to always pass its args down into initialize, so we immediate init it
+/// This code was taken from Parallax code and changed to fit the needs
+
+/// Paralax does this so we do it as well
 INITIALIZE_IMMEDIATE(/atom/movable/screen/cameranet_static)
 /atom/movable/screen/cameranet_static
 	icon = 'necromorphs/icons/hud/cameranet_static.dmi'
@@ -28,12 +30,12 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/cameranet_static)
 	if(view == view_sized)
 		return
 
-	var/static/parallax_scaler = world.icon_size / 480
+	var/static/icon_scaler = world.icon_size / 480
 
 	// Turn the view size into a grid of correctly scaled overlays
 	var/list/viewscales = getviewsize(view)
-	var/countx = CEILING((viewscales[1] / 2) * parallax_scaler, 1) + 1
-	var/county = CEILING((viewscales[2] / 2) * parallax_scaler, 1) + 1
+	var/countx = CEILING((viewscales[1] / 2) * icon_scaler, 1) + 1
+	var/county = CEILING((viewscales[2] / 2) * icon_scaler, 1) + 1
 	var/list/new_overlays = new
 	for(var/x in -countx to countx)
 		for(var/y in -county to county)
@@ -66,7 +68,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/cameranet_static)
 	var/largest_change = max(abs(offset_x), abs(offset_y))
 	var/max_allowed_dist = (glide_rate / world.tick_lag) + 1
 
-	// If we aren't already moving/don't allow parallax, have made some movement, and that movement was smaller then our "glide" size, animate
+	// If we aren't already moving, have made some movement, and that movement was smaller then our "glide" size, animate
 	var/run_parralax = (glide_rate && largest_change <= max_allowed_dist)
 
 	offset_x *= world.icon_size

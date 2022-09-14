@@ -3,10 +3,10 @@
 // CAMERA CHUNK
 //
 // A 16x16 grid of the map with a list of turfs that can be seen, are visible and are dimmed.
-// Allows the AI Eye to stream these chunks and know what it can and cannot see.
+// Allows the Marker Eyes to stream these chunks and know what it can and cannot see.
 
 /datum/markerchunk
-
+	/// Visible turfs in this chunk
 	var/list/visibleTurfs
 	/// Assoc list of the form: list(source = list(turfs source can see in this chunk))
 	/// Contains all vision sources
@@ -15,13 +15,13 @@
 	var/list/rangeVisionSources
 	/// Vision sources that update in hasChanged
 	var/list/viewVisionSources
-	///list of all turfs = image that masks static
+	/// List of all turfs = image that masks static
 	var/list/turfs
-
+	/// List of active images, i.e list of masks for visible turfs
 	var/list/active_masks
-	///camera mobs that can see turfs in our chunk
+	/// Camera mobs that can see turfs in our chunk
 	var/list/seenby
-
+	/// Lazy list, In update() things in it will reculculate what turfs they can see
 	var/list/queued_for_update
 
 	var/x = 0
@@ -71,7 +71,7 @@
 		remove(eye)
 	return ..()
 
-/// Add an AI eye to the chunk
+/// Add a Marker eye to the chunk
 /datum/markerchunk/proc/add(mob/camera/marker_signal/eye)
 	eye.visibleChunks += src
 	seenby += eye
@@ -80,7 +80,7 @@
 
 	eye.client?.images += active_masks
 
-/// Remove an AI eye from the chunk
+/// Remove a Marker eye from the chunk
 /datum/markerchunk/proc/remove(mob/camera/marker_signal/eye)
 	eye.visibleChunks -= src
 	seenby -= eye
@@ -88,15 +88,14 @@
 	eye.client?.images -= active_masks
 
 /*
- * Updates the chunk, makes sure that it doesn't update too much. If the chunk isn't being watched it will
- * instead be flagged to update the next time an AI Eye moves near it.
+ * Updates the chunk if it's watched, otherwise queued until Marker eye sees it
  */
 /datum/markerchunk/proc/hasChanged(list/to_update)
 	LAZYADD(queued_for_update, to_update)
 	if(length(seenby))
 		update()
 
-/// The actual updating. It gathers the visible turfs from cameras and puts them into the appropiate lists.
+/// The actual updating. It only updates vision sources in var/list/queued_for_update
 /datum/markerchunk/proc/update()
 	if(!queued_for_update)
 		return

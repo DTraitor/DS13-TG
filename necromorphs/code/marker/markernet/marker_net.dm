@@ -74,7 +74,7 @@
 				if(length(chunk?.viewVisionSources))
 					chunk.hasChanged(chunk.viewVisionSources)
 
-/// Add a camera to a chunk.
+/// Adds a vision source to the visual net
 /datum/markernet/proc/addVisionSource(atom/A, movable, vision_type = VISION_SOURCE_RANGE)
 	var/turf/T = get_turf(A)
 	if(T)
@@ -88,6 +88,7 @@
 			for(var/y = y1 to y2 step CHUNK_SIZE)
 				var/datum/markerchunk/chunk = chunkGenerated(x, y, T.z)
 				if(chunk)
+					// We don't queue here to spread the load between different ticks
 					var/list/visible = list()
 					chunk.visionSources[A] = visible
 					for(var/turf/vis_turf as anything in (A.can_see_marker() & chunk.turfs))
@@ -108,7 +109,7 @@
 	if(movable)
 		RegisterSignal(A, COMSIG_MOVABLE_MOVED, .proc/onSourceMove)
 
-/// Removes a camera from a chunk.
+/// Removes a vision source from the visual net
 /datum/markernet/proc/removeVisionSource(atom/A)
 	UnregisterSignal(A, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 	var/turf/T = get_turf(A)
@@ -129,6 +130,8 @@
 					if(length(chunk.seenby))
 						chunk.update()
 
+/// Perhaps just make sure everything that can be in our visualnet calls removeVisionSource(src) in it's Destroy
+/// and remove this signal
 /datum/markernet/proc/onSourceDestroy(atom/source)
 	removeVisionSource(source)
 

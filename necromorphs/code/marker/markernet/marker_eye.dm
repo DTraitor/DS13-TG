@@ -52,13 +52,9 @@
 	cameranet_static.RegisterSignal(client, COMSIG_VIEW_SET, /atom/movable/screen/cameranet_static/proc/on_view_change)
 	client.screen += cameranet_static
 
-/mob/camera/marker_signal/proc/get_visible_turfs()
-	if(!isturf(loc))
-		return list()
-	var/list/view = client ? getviewsize(client.view) : getviewsize(world.view)
-	var/turf/lowerleft = locate(max(1, x - (view[1] - 1)/2), max(1, y - (view[2] - 1)/2), z)
-	var/turf/upperright = locate(min(world.maxx, lowerleft.x + (view[1] - 1)), min(world.maxy, lowerleft.y + (view[2] - 1)), lowerleft.z)
-	return block(lowerleft, upperright)
+/mob/camera/marker_signal/Logout()
+	cameranet_static.UnregisterSignal(canon_client, COMSIG_VIEW_SET)
+	return ..()
 
 /mob/camera/marker_signal/Move(NewLoc, direct, glide_size_override = 32)
 	if(updatedir)
