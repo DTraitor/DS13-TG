@@ -32,3 +32,12 @@
 /mob/living/carbon/necromorph/proc/end_charge()
 	SIGNAL_HANDLER
 	charging = FALSE
+
+/mob/living/carbon/necromorph/proc/evacuate()
+	set name = "Evacuate"
+	set category = "Necromorph"
+
+	if(controlling)
+		controlling.abstract_move(get_turf(src))
+		mind.transfer_to(controlling, TRUE)
+		controlling = null

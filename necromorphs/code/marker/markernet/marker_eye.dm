@@ -2,18 +2,23 @@
 	name = "Signal"
 	icon_state = "markersignal-"
 	icon = 'necromorphs/icons/signals/eye.dmi'
+	plane = MARKER_SIGNAL_PLANE
 	invisibility = INVISIBILITY_OBSERVER
 	see_invisible = SEE_INVISIBLE_OBSERVER
 	sight = SEE_MOBS|SEE_OBJS|SEE_TURFS
+	mouse_opacity = MOUSE_OPACITY_ICON
 	movement_type = GROUND|FLYING
 	hud_type = /datum/hud/marker
 	interaction_range = null
 	var/updatedir
-	var/list/visibleChunks = list()
+	var/list/visibleChunks
 	var/obj/structure/marker/marker
 	var/static_visibility_range = 16
+	var/atom/movable/screen/cameranet_static/cameranet_static
 
 /mob/camera/marker_signal/Initialize(mapload, obj/structure/marker/master)
+	visibleChunks = list()
+	cameranet_static = new(null, src)
 	. = ..()
 	if(master)
 		marker = master
@@ -23,15 +28,29 @@
 	icon_state += "[rand(1, 25)]"
 	master.marker_signals += src
 	forceMove(get_turf(marker))
+	master.markernet.eyes += src
 
 /mob/camera/marker_signal/Destroy()
-	if(marker)
-		marker.marker_signals -= src
-		marker = null
+	marker.markernet.eyes -= src
+	marker.marker_signals -= src
+	marker = null
 	for(var/V in visibleChunks)
 		var/datum/markerchunk/c = V
 		c.remove(src)
+	QDEL_NULL(cameranet_static)
 	return ..()
+
+/mob/camera/marker_signal/Login()
+	. = ..()
+	if(!. || !client)
+		return FALSE
+	for(var/datum/markerchunk/chunk as anything in visibleChunks)
+		client.images += chunk.active_masks
+	marker.markernet.visibility(src)
+	var/view = client.view || world.view
+	cameranet_static.update_o(view)
+	cameranet_static.RegisterSignal(client, COMSIG_VIEW_SET, /atom/movable/screen/cameranet_static/proc/on_view_change)
+	client.screen += cameranet_static
 
 /mob/camera/marker_signal/proc/get_visible_turfs()
 	if(!isturf(loc))
@@ -49,7 +68,6 @@
 		set_glide_size(glide_size_override)
 	if(NewLoc)
 		abstract_move(NewLoc)
-		marker.markernet.visibility(src, client)
 		update_parallax_contents()
 	else
 		var/turf/destination = get_turf(src)
@@ -67,12 +85,27 @@
 			destination = get_step(destination, WEST)
 
 		abstract_move(destination)
-		marker.markernet.visibility(src, client)
 
 /mob/camera/marker_signal/forceMove(atom/destination)
 	abstract_move(destination) // move like the wind
-	marker.markernet.visibility(src, client)
 	return TRUE
+
+/mob/camera/marker_signal/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
+	..()
+	if(client)
+		marker.markernet.visibility(src)
+		update_static(old_loc)
+	return TRUE
+
+/mob/camera/marker_signal/verb/possess_necromorph(mob/living/carbon/necromorph/necro in world)
+	set name = "Possess Necromorph"
+	set category = "Object"
+
+	necro.controlling = src
+	mind.transfer_to(necro, TRUE)
+	//moveToNullspace()
+	//We don't want to use doMove() here
+	abstract_move(null)
 
 /mob/camera/marker_signal/marker
 	name = "Marker"
@@ -88,3 +121,7 @@
 /mob/camera/marker_signal/marker/Initialize(mapload, obj/structure/marker/master)
 	. = ..()
 	icon_state = "mastersignal"
+
+/mob/camera/marker_signal/marker/Destroy()
+	marker?.camera_mob = null
+	return ..()

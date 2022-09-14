@@ -1,20 +1,19 @@
-/mob/living/carbon/necromorph/Initialize(mapload, atom/loc, obj/structure/marker/marker_master)
+/mob/living/carbon/necromorph/Initialize(mapload, obj/structure/marker/marker_master)
 	create_bodyparts()
 	prepare_huds() //Prevents a nasty runtime on necro init
 	create_internal_organs()
 	ADD_TRAIT(src, TRAIT_IS_NECROMORPH, NECROMORPH_TRAIT)
 	.=..()
 
-	if(marker_master)
-		marker = marker_master
-
-	marker?.markernet.addVisionSource(src)
+	if(!marker_master)
+		marker_master = pick(GLOB.necromorph_markers)
 
 	generate_name()
 
-	if(marker)
-		marker.add_necro(src)
-		var/datum/necro_class/temp = marker.necro_classes[class].traits
+	if(marker_master)
+		marker = marker_master
+		marker_master.add_necro(src)
+		var/datum/necro_class/temp = marker_master.necro_classes[class]
 		temp.load_data(src)
 		set_health(temp.max_health)
 	else
@@ -78,20 +77,13 @@
 
 /mob/living/carbon/necromorph/Destroy()
 	.=..()
-	marker.markernet.removeVisionSource(src)
 	marker?.remove_necro(src)
-
 	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
 
-/atom/proc/can_see_marker()
-	var/list/see = null
-	var/turf/pos = get_turf(src)
-	var/view_range = get_view_range()
-	see = get_hear(view_range, pos)
-	return see
-
-/atom/proc/get_view_range()
-	return 7
+/mob/living/carbon/necromorph/can_see_marker()
+	. = list()
+	for(var/turf/T in view(src))
+		. += T
 
 // VENTCRAWLING
 // Handles the entrance and exit on ventcrawling
@@ -229,3 +221,7 @@
 	update_health_hud()
 	update_stamina_hud()
 	med_hud_set_status()
+
+/mob/living/carbon/necromorph/Login()
+	.=..()
+	add_verb(src, /mob/living/carbon/necromorph/proc/evacuate)

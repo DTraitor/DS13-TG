@@ -40,53 +40,55 @@
 	var/nicknumber = 0
 
 	var/tier = 0
-	//Necromorph class type we are using, shouldn't be a ref
-	//Use initial(class.X) or marker.necro_classes[class].X
+	/// Necromorph class type we are using, shouldn't be a ref
+	/// Use marker?.necro_classes[class].your_var||initial(class.your_var) if you need to get a var
 	var/datum/necro_class/class = /datum/necro_class
 
 	var/obj/structure/marker/marker
 
-	var/necro_mobhud = FALSE //whether the necromorph mobhud is activated or not.
+	/// whether the necromorph mobhud is activated or not.
+	var/necro_mobhud = FALSE
 
-	var/marker_chosen_lead //whether the necromorph has been selected by the queen as a leader.
+	/// whether the necromorph has been selected by the queen as a leader.
+	var/marker_chosen_lead
 
-	//Notification spam controls
+	/// Notification spam controls
 	var/recent_notice = 0
-	var/notice_delay = 20 //2 second between notices
+	var/notice_delay = 2 SECONDS
 
-	var/fire_luminosity = 0 //Luminosity of the current fire while burning
+	/// Luminosity of the current fire while burning
+	var/fire_luminosity = 0
 
-	var/list/species_audio = list()	//An associative list of lists, in the format SOUND_TYPE = list(sound_1, sound_2)
-	var/list/species_audio_volume = list() //An associative list, in the format SOUND_TYPE = VOLUME_XXX. Values set here will override the volume of species audio files
-
-	///The necromorph currently tracked by the necro_tracker arrow
+	/// The necromorph currently tracked by the necro_tracker arrow
 	var/atom/tracked
 
-	///see_in_dark value while consicious
+	/// see_in_dark value while consicious
 	var/conscious_see_in_dark = 8
-	///see_in_dark value while unconscious
+	/// see_in_dark value while unconscious
 	var/unconscious_see_in_dark = 5
 
-	///bitwise flags denoting things a necromorph can and cannot do, or things a necromorph is or is not. uses defines.
+	/// bitwise flags denoting things a necromorph can and cannot do, or things a necromorph is or is not. uses defines.
 	var/necro_flags = NONE
 
-	///How effective fire is against this necromorph. From 0 to 1 as it is a multiplier.
+	/// How effective fire is against this necromorph. From 0 to 1 as it is a multiplier.
 	var/fire_resist = 1
 
-	///How quickly the necromorph enters vents
+	/// How quickly the necromorph enters vents
 	var/vent_enter_speed = NECRO_DEFAULT_VENT_ENTER_TIME
-	///How quickly the necromorph enters vents
+	/// How quickly the necromorph enters vents
 	var/vent_exit_speed = NECRO_DEFAULT_VENT_EXIT_TIME
-	///Whether the necromorph enters and crawls through vents silently
+	/// Whether the necromorph enters and crawls through vents silently
 	var/silent_vent_crawl = FALSE
 
-	///Wether this necromorph is charging at the moment
+	/// Wether this necromorph is charging at the moment
 	var/charging = FALSE
 
-	///How good are we at penetrating armour
+	/// How good are we at penetrating armour
 	var/armour_penetration = 0
 
 	var/attack_effect = ATTACK_EFFECT_SLASH
+	/// Signal controlling this necromorph at the moment
+	var/mob/camera/marker_signal/controlling
 
 	COOLDOWN_DECLARE(necro_health_alert_cooldown)
 

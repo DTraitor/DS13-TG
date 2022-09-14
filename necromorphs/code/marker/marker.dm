@@ -4,11 +4,6 @@
 	markernet = new
 	markernet.addVisionSource(src)
 
-	camera_mob = new /mob/camera/marker_signal/marker(null, src)
-	camera_mob.real_name = camera_mob.name
-	camera_mob.mouse_opacity = MOUSE_OPACITY_ICON
-	camera_mob.invisibility = INVISIBILITY_OBSERVER
-
 	for(var/datum/necro_class/class as anything in subtypesof(/datum/necro_class))
 		necro_classes[class] = new class()
 
@@ -37,12 +32,31 @@
 		necro.marker.remove_necro(necro, TRUE)
 	necro.marker = src
 	necromorphs |= necro
-	markernet.addVisionSource(src)
+	markernet.addVisionSource(necro, TRUE, VISION_SOURCE_VIEW)
 
 /obj/structure/marker/proc/remove_necro(mob/living/carbon/necromorph/necro, hard=FALSE, light_mode = FALSE)
 	if(necro.marker != src)
 		return
-	markernet.removeVisionSource(src)
+	markernet.removeVisionSource(necro)
 	necromorphs -= necro
 	necro.marker = null
 
+/obj/structure/marker/proc/activate()
+	active = TRUE
+	new /datum/corruption_node/marker(src)
+
+/obj/structure/marker/CanCorrupt(corruption_dir)
+	return TRUE
+
+/obj/structure/marker/can_see_marker()
+	return RANGE_TURFS(12, src)
+
+//DEBUG ONLY! REMOVE THIS!
+/obj/structure/marker/verb/take_control()
+	set category = "Object"
+	set name = "Take control"
+	set src in world
+
+	camera_mob = new /mob/camera/marker_signal/marker(null, src)
+	camera_mob.real_name = camera_mob.name
+	camera_mob.ckey = usr.ckey

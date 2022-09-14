@@ -7,13 +7,11 @@ SUBSYSTEM_DEF(corruption)
 	priority = FIRE_PRIORITY_CORRUPTION
 	wait = 1 SECONDS
 	flags = SS_NO_INIT
-	/// A list of corruption nodes
-	var/list/nodes = list()
 	/// A list of corruption that is still growing and not ready to spread
 	var/list/growing = list()
 	/// A list of decaying corruption
 	var/list/decaying = list()
-	/// A list of grown corruption that is ready to spread
+	/// A list of nodes that can spread
 	var/list/spreading = list()
 
 	var/list/currentrun
@@ -24,12 +22,13 @@ SUBSYSTEM_DEF(corruption)
 	return ..()
 
 /datum/controller/subsystem/corruption/fire(resumed)
-	var/list/obj/structure/corruption/currentrun = src.currentrun
+	var/list/currentrun = src.currentrun
 	if(curernt_part == SS_GROWING || !resumed)
 		if(!resumed)
 			currentrun = growing.Copy()
 		while(length(currentrun))
-			currentrun[length(currentrun)].repair_damage(3)
+			var/obj/structure/corruption/corruption = currentrun[length(currentrun)]
+			corruption.repair_damage(3)
 			currentrun.len--
 			if(MC_TICK_CHECK)
 				return
@@ -39,7 +38,8 @@ SUBSYSTEM_DEF(corruption)
 		if(!resumed)
 			currentrun = decaying.Copy()
 		while(length(currentrun))
-			currentrun[length(currentrun)].take_damage(3)
+			var/obj/structure/corruption/corruption = currentrun[length(currentrun)]
+			corruption.take_damage(3)
 			currentrun.len--
 			if(MC_TICK_CHECK)
 				return
@@ -49,7 +49,8 @@ SUBSYSTEM_DEF(corruption)
 		if(!resumed)
 			currentrun = spreading.Copy()
 		while(length(currentrun))
-			currentrun[length(currentrun)].spread()
+			var/datum/corruption_node/corruption = currentrun[length(currentrun)]
+			corruption.spread()
 			currentrun.len--
 			if(MC_TICK_CHECK)
 				return
@@ -57,7 +58,6 @@ SUBSYSTEM_DEF(corruption)
 	curernt_part = SS_GROWING
 
 /datum/controller/subsystem/corruption/Recover()
-	nodes = SScorruption.nodes
 	growing = SScorruption.growing
 	spreading = SScorruption.spreading
 	decaying = SScorruption.decaying
