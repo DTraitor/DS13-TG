@@ -157,7 +157,10 @@
 		var/datum/hud/marker/our_hud = hud_used
 		var/filter = our_hud.psy_energy.get_filter("alpha_filter")
 		animate(filter, x = clamp(PSYBAR_PIXEL_WIDTH*(psy_energy/psy_energy_maximum), 0, PSYBAR_PIXEL_WIDTH), time = 0.5 SECONDS)
-		our_hud.foreground.maptext = MAPTEXT("[max(0, psy_energy)]/[psy_energy_maximum] | <i>+[psy_energy_generation] psy/sec</i>")
+		var/psy_string = max(0, psy_energy)
+		if(round(psy_string, 1) == psy_string)
+			psy_string = "[psy_string].0"
+		our_hud.foreground.maptext = MAPTEXT("[psy_string]/[psy_energy_maximum] | +[psy_energy_generation] psy/seс")
 
 /mob/camera/marker_signal/marker
 	name = "Marker"

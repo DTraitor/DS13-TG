@@ -9,7 +9,11 @@
 	foreground = new
 	psy_energy.color = COLOR_PURPLE
 	psy_energy.add_filter("alpha_filter", 1, alpha_mask_filter(clamp(PSYBAR_PIXEL_WIDTH*(owner.psy_energy/owner.psy_energy_maximum), 0, owner.psy_energy_maximum), 0, icon('necromorphs/icons/hud/healthbar.dmi', "alpha_mask"), flags = MASK_INVERSE))
-	foreground.maptext = MAPTEXT("[max(0, owner.psy_energy)]/[owner.psy_energy_maximum] | <i>+[owner.psy_energy_generation] psy/sec</i>")
+	foreground.maptext_x = 53
+	var/psy_string = max(0, owner.psy_energy)
+	if(round(psy_string, 1) == psy_string)
+		psy_string = "[psy_string].0"
+	foreground.maptext = MAPTEXT("[psy_string]/[owner.psy_energy_maximum] | +[owner.psy_energy_generation] psy/sec")
 	..()
 
 /datum/hud/marker/show_hud(version, mob/viewmob)
