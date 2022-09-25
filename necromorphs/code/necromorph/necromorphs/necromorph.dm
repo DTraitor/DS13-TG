@@ -80,11 +80,6 @@
 	marker?.remove_necro(src)
 	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
 
-/mob/living/carbon/necromorph/can_see_marker()
-	. = list()
-	for(var/turf/T in view(src))
-		. += T
-
 // VENTCRAWLING
 // Handles the entrance and exit on ventcrawling
 // Copy paste of the /mob/living/proc/handle_ventcrawl()
@@ -221,7 +216,3 @@
 	update_health_hud()
 	update_stamina_hud()
 	med_hud_set_status()
-
-/mob/living/carbon/necromorph/Login()
-	.=..()
-	add_verb(src, /mob/living/carbon/necromorph/proc/evacuate)

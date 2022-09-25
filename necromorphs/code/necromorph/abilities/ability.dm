@@ -1,18 +1,15 @@
 /datum/action/cooldown/necro
 	background_icon_state = "bg_demon"
 
-/datum/action/cooldown/necro/New(Target, cooldown)
+/datum/action/cooldown/necro/New(Target, original, cooldown)
 	. = ..()
 	if(!isnull(cooldown))
 		cooldown_time = cooldown
 
-/datum/action/cooldown/necro/Activate(atom/target)
-	StartCooldown()
-
 /datum/action/cooldown/necro/proc/CooldownEnd()
 	return
 
-/datum/action/cooldown/necro/process()
+/datum/action/cooldown/necro/process(delta_time)
 	.=..()
 	var/time_left = max(next_use_time - world.time, 0)
 	if(!time_left)

@@ -3,14 +3,18 @@
 	icon_state = "markersignal-"
 	icon = 'necromorphs/icons/signals/eye.dmi'
 	plane = MARKER_SIGNAL_PLANE
-	invisibility = INVISIBILITY_OBSERVER
-	see_invisible = SEE_INVISIBLE_OBSERVER
+	invisibility = INVISIBILITY_MARKER_SIGNAL
+	see_invisible = SEE_INVISIBLE_MARKER_SIGNAL
 	sight = SEE_MOBS|SEE_OBJS|SEE_TURFS
 	mouse_opacity = MOUSE_OPACITY_ICON
 	movement_type = GROUND|FLYING
 	hud_type = /datum/hud/marker
 	interaction_range = null
-	var/updatedir
+	var/psy_energy = 0
+	var/psy_energy_maximum = 900
+	var/psy_energy_generation = 1.5
+	var/updatedir = null
+	var/list/abilities
 	var/list/visibleChunks
 	var/obj/structure/marker/marker
 	var/static_visibility_range = 16
@@ -18,8 +22,9 @@
 
 /mob/camera/marker_signal/Initialize(mapload, obj/structure/marker/master)
 	visibleChunks = list()
+	abilities = list()
 	cameranet_static = new(null, src)
-	. = ..()
+	.=..()
 	if(master)
 		marker = master
 	else
@@ -30,15 +35,24 @@
 	forceMove(get_turf(marker))
 	master.markernet.eyes += src
 
+	for(var/datum/action/cooldown/necro/psy/ability as anything in subtypesof(/datum/action/cooldown/necro/psy))
+		ability = new ability(src)
+		abilities += ability
+		if((initial(ability.required_marker_status) & SIGNAL_ABILITY_PRE_ACTIVATION) && !marker.active)
+			ability.Grant(src)
+		else if((initial(ability.required_marker_status) & SIGNAL_ABILITY_POST_ACTIVATION) && marker.active)
+			ability.Grant(src)
+
+	START_PROCESSING(SSprocessing, src)
+
 /mob/camera/marker_signal/Destroy()
 	marker.markernet.eyes -= src
 	marker.marker_signals -= src
 	marker = null
-	for(var/V in visibleChunks)
-		var/datum/markerchunk/c = V
-		c.remove(src)
+	for(var/datum/markerchunk/chunk as anything in visibleChunks)
+		chunk.remove(src)
+	.=..()
 	QDEL_NULL(cameranet_static)
-	return ..()
 
 /mob/camera/marker_signal/Login()
 	. = ..()
@@ -53,8 +67,13 @@
 	client.screen += cameranet_static
 
 /mob/camera/marker_signal/Logout()
-	cameranet_static.UnregisterSignal(canon_client, COMSIG_VIEW_SET)
+	// Without if() this will runtime if you close dream seeker hosting the build
+	if(canon_client)
+		cameranet_static.UnregisterSignal(canon_client, COMSIG_VIEW_SET)
 	return ..()
+
+/mob/camera/marker_signal/process(delta_time)
+	change_psy_energy(psy_energy_generation)
 
 /mob/camera/marker_signal/Move(NewLoc, direct, glide_size_override = 32)
 	if(updatedir)
@@ -93,6 +112,35 @@
 		update_static(old_loc)
 	return TRUE
 
+/mob/camera/marker_signal/DblClickOn(atom/A, params)
+	if(check_click_intercept(params, A))
+		return
+
+	if(istype(A, /mob/living/carbon/necromorph))
+		possess_necromorph(A)
+		return
+
+	if(istype(A, /atom/movable/screen/cameranet_static))
+		// Find a turf below the location we clicked at
+		var/list/list_params = params2list(params)
+		var/list/view = getviewsize(src.client.view)
+		var/list/screen_loc = splittext(list_params["screen-loc"], ",")
+		var/x = splittext(screen_loc[1], ":")
+		x = src.x-round(view[1]*0.5, 1)+text2num(x[1])
+		var/y = splittext(screen_loc[2], ":")
+		y = src.y-round(view[2]*0.5, 1)+text2num(y[1])
+		A = locate(x, y, src.z)
+
+	// Otherwise just jump to the turf
+	if(A.loc)
+		abstract_move(get_turf(A))
+
+/mob/camera/marker_signal/verb/leave_horde()
+	set name = "Leave the Horde"
+	set category = "Necromorph"
+
+	qdel(src)
+
 /mob/camera/marker_signal/verb/possess_necromorph(mob/living/carbon/necromorph/necro in world)
 	set name = "Possess Necromorph"
 	set category = "Object"
@@ -102,6 +150,14 @@
 	//moveToNullspace()
 	//We don't want to use doMove() here
 	abstract_move(null)
+
+/mob/camera/marker_signal/proc/change_psy_energy(amount)
+	psy_energy = clamp(psy_energy+amount, 0, psy_energy_maximum)
+	if(hud_used)
+		var/datum/hud/marker/our_hud = hud_used
+		var/filter = our_hud.psy_energy.get_filter("alpha_filter")
+		animate(filter, x = clamp(PSYBAR_PIXEL_WIDTH*(psy_energy/psy_energy_maximum), 0, PSYBAR_PIXEL_WIDTH), time = 0.5 SECONDS)
+		our_hud.foreground.maptext = MAPTEXT("[max(0, psy_energy)]/[psy_energy_maximum] | <i>+[psy_energy_generation] psy/sec</i>")
 
 /mob/camera/marker_signal/marker
 	name = "Marker"

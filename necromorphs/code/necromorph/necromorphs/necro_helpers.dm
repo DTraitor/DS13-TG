@@ -33,7 +33,7 @@
 	SIGNAL_HANDLER
 	charging = FALSE
 
-/mob/living/carbon/necromorph/proc/evacuate()
+/mob/living/carbon/necromorph/verb/evacuate()
 	set name = "Evacuate"
 	set category = "Necromorph"
 

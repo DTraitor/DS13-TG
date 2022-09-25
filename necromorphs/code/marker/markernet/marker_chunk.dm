@@ -50,7 +50,10 @@
 
 	var/turf/centre_turf = locate(x + (CHUNK_SIZE / 2), y + (CHUNK_SIZE / 2), z)
 	for(var/atom/source as anything in netVisionSources)
-		if(source.z != z || get_dist(source, centre_turf) > CHUNK_SIZE + (CHUNK_SIZE / 2))
+		if(source.z != z)
+			continue
+		var/dist = get_dist(source, centre_turf)
+		if(dist < 0 || dist > CHUNK_SIZE)
 			continue
 
 		var/list/visible = list()
@@ -69,6 +72,8 @@
 /datum/markerchunk/Destroy(force, ...)
 	for(var/mob/camera/marker_signal/eye as anything in seenby)
 		remove(eye)
+	active_masks = null
+	turfs = null
 	return ..()
 
 /// Add a Marker eye to the chunk
@@ -91,7 +96,7 @@
  * Updates the chunk if it's watched, otherwise queued until Marker eye sees it
  */
 /datum/markerchunk/proc/hasChanged(list/to_update)
-	LAZYADD(queued_for_update, to_update)
+	LAZYOR(queued_for_update, to_update)
 	if(length(seenby))
 		update()
 
@@ -105,7 +110,8 @@
 
 	var/turf/point = locate(src.x + (CHUNK_SIZE / 2), src.y + (CHUNK_SIZE / 2), src.z)
 	for(var/atom/source as anything in queued_for_update)
-		if(get_dist(point, source) > CHUNK_SIZE + (CHUNK_SIZE / 2))
+		var/dist = get_dist(point, source)
+		if(dist < 0 || (dist > CHUNK_SIZE + (CHUNK_SIZE / 2)))
 			visionSources -= source
 			rangeVisionSources -= source
 			viewVisionSources -= source

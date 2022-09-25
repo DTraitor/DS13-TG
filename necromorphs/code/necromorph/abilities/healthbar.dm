@@ -1,10 +1,9 @@
 #define HEALTHBAR_PIXEL_WIDTH 181
-#define HEALTHBAR_PIXEL_HEIGHT 24
-
+//TODO: Get rid of the component, move this into necromorph UI
 /datum/component/health_meter
-	var/atom/movable/screen/health_meter/background/background
-	var/atom/movable/screen/health_meter/health/health
-	var/atom/movable/screen/health_meter/foreground/foreground
+	var/atom/movable/screen/meter/background/background
+	var/atom/movable/screen/meter/health/health
+	var/atom/movable/screen/meter/foreground/foreground
 
 /datum/component/health_meter/Initialize()
 	if(!istype(parent, /mob/living))
@@ -64,24 +63,23 @@
 	foreground.maptext = MAPTEXT("[max(0, source.health)]/[source.maxHealth]")
 
 //Screen objects
-/atom/movable/screen/health_meter
+/atom/movable/screen/meter
 	icon = 'necromorphs/icons/hud/healthbar.dmi'
 	icon_state = "backdrop"
 	screen_loc = "TOP,CENTER-2:-8"
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-/atom/movable/screen/health_meter/background
+/atom/movable/screen/meter/background
 	icon_state = "backdrop"
 
-/atom/movable/screen/health_meter/health
+/atom/movable/screen/meter/health
 	icon_state  = "health_grayscale"
 	color = COLOR_CULT_RED
 
-/atom/movable/screen/health_meter/foreground
+/atom/movable/screen/meter/foreground
 	icon_state = "graphic"
 	maptext_x = 73
 	maptext_y = 8
 	maptext_width = HEALTHBAR_PIXEL_WIDTH
 
 #undef HEALTHBAR_PIXEL_WIDTH
-#undef HEALTHBAR_PIXEL_HEIGHT

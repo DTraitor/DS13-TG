@@ -65,6 +65,7 @@
 			set_master(node)
 			return
 	master = null
+	SScorruption.growing -= src
 	SScorruption.decaying += src
 
 /obj/structure/corruption/proc/on_integrity_change(datum/source, old_integrity, new_integrity)
@@ -90,7 +91,7 @@
 	new_master.remaining_weed_amount--
 	new_master.corruption += src
 	SScorruption.decaying -= src
-	new_master.marker.markernet.addVisionSource(src)
+	new_master.marker.markernet.addVisionSource(src, VISION_SOURCE_RANGE)
 
 /obj/structure/corruption/play_attack_sound(damage_amount, damage_type, damage_flag)
 	switch(damage_type)
@@ -120,3 +121,7 @@
 
 /obj/structure/corruption/hardened
 	resistance_flags = UNACIDABLE|INDESTRUCTIBLE
+
+/obj/structure/corruption/hardened/on_master_delete()
+	..()
+	resistance_flags &= INDESTRUCTIBLE

@@ -18,10 +18,13 @@
 	if(!new_parent)
 		qdel(src)
 		CRASH("Tried to spawn a corruption node without parent in real world.")
-	marker = marker||pick(GLOB.necromorph_markers)
+
 	if(!marker)
-		qdel(src)
-		CRASH("Tried to spawn a corruption node without marker.")
+		if(length(GLOB.necromorph_markers))
+			marker = pick(GLOB.necromorph_markers)
+		else
+			qdel(src)
+			CRASH("Tried to spawn a corruption node without marker.")
 	corruption = list()
 	turfs_to_watch = list()
 	turfs_to_spread = list()
@@ -35,7 +38,6 @@
 	for(var/obj/structure/corruption/corrupt as anything in corruption)
 		corrupt.on_master_delete()
 	SScorruption.spreading -= src
-	SScorruption.currentrun -= src
 	marker.nodes -= src
 	marker = null
 	parent = null
